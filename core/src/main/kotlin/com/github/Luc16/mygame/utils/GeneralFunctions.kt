@@ -8,6 +8,7 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 fun Float.toRad(): Float = PI.toFloat() * this/180
+fun Float.toDeg(): Float = 180 * this/PI.toFloat()
 
 fun Vector2.ortho(): Vector2 = Vector2(-this.y, this.x)
 

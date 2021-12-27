@@ -13,8 +13,10 @@ import com.github.Luc16.mygame.components.DynamicBall
 import com.github.Luc16.mygame.components.PlayerBall
 import com.github.Luc16.mygame.screens.*
 import com.github.Luc16.mygame.utils.dist2
+import com.github.Luc16.mygame.utils.toDeg
 import ktx.graphics.moveTo
 import ktx.graphics.use
+import kotlin.math.atan
 import kotlin.random.Random
 
 class EnemyScreen(game: MyGame): CustomScreen(game) {
@@ -23,6 +25,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
     private val enemy = DynamicBall( 100f, 100f, 15f, Color.BLUE, maxSpeed = 500f)
+    private val bullets = mutableListOf<DynamicBall>()
     private var stars = mutableMapOf<Pair<Int, Int>, DynamicBall>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -32,6 +35,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private var seedOffset = 0
     private var score = 0
     private val textLayout = GlyphLayout()
+    private var frame = 0
 
     override fun show() {
         val file = Gdx.files.local("assets/seed.txt")
@@ -52,12 +56,36 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     }
 
     override fun render(delta: Float) {
+        frame++
         handleInputs()
         player.update(delta)
+
+        // Enemy stuff
         enemy.direction.set(player.x - enemy.x, player.y - enemy.y).nor()
         enemy.update(delta)
-        if (dist2(enemy.pos, player.pos) <= 150*150) enemy.speed = 0f
+        if (dist2(enemy.pos, player.pos) <= 200*200) {
+            enemy.speed = 0f
+            if (frame%20 == 0) bullets.add(DynamicBall(
+                enemy.x + 18f*enemy.direction.x,
+                enemy.y + 18f*enemy.direction.y,
+                3f,
+                initialDir = enemy.direction,
+                maxSpeed = 800f
+            ))
+        }
         else enemy.speed = enemy.maxSpeed
+
+        val bulletsToRemove = mutableListOf<DynamicBall>()
+        bullets.forEach { bullet ->
+            bullet.update(delta)
+            if (player.collideMovingBall(bullet, delta)) {
+                bulletsToRemove.add(bullet)
+                player.speed = 0f
+            }
+
+            if (dist2(bullet.pos, player.pos) > 500*500) bulletsToRemove.add(bullet)
+        }
+        bulletsToRemove.forEach { bullets.remove(it) }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) player.speed = 0f
         offset.set(player.x - WIDTH/2, player.y - HEIGHT/2)
@@ -174,6 +202,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
             handleEntities(renderer, delta)
             player.draw(renderer)
             enemy.draw(renderer)
+            bullets.forEach { it.draw(renderer) }
             drawMinimap(renderer)
         }
     }

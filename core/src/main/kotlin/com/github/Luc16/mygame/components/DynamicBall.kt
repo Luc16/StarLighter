@@ -15,11 +15,11 @@ open class DynamicBall(iniX: Float,
                        iniY: Float,
                        radius: Float,
                        color: Color = Color.YELLOW,
-                       angle: Float = 0f,
+                       initialDir: Vector2 = Vector2(),
                        private val deceleration: Float = DECELERATION,
                        val maxSpeed: Float = MAX_SPEED
 ): Ball(iniX, iniY, radius, color) {
-    val direction = Vector2(cos(angle.toRad()), sin(angle.toRad()))
+    val direction = Vector2(initialDir)
     var speed = maxSpeed
     val nextPos = Vector2(pos)
     private val radius2 get() = radius*radius
