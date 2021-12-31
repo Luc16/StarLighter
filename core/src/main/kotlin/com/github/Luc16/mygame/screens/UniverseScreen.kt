@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2
 import com.github.Luc16.mygame.HEIGHT
 import com.github.Luc16.mygame.MyGame
 import com.github.Luc16.mygame.WIDTH
+import com.github.Luc16.mygame.components.Ball
 import com.github.Luc16.mygame.components.DynamicBall
 import com.github.Luc16.mygame.components.PlayerBall
 import ktx.graphics.moveTo
@@ -27,7 +28,7 @@ class UniverseScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private var stars = mutableMapOf<Pair<Int, Int>, DynamicBall>()
+    private var stars = mutableMapOf<Pair<Int, Int>, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
     private val numSectorsY = (HEIGHT/(2*MAX_RADIUS)).toInt() + 2
@@ -145,7 +146,7 @@ class UniverseScreen(game: MyGame): CustomScreen(game) {
             val rand = Random(createSeed(i, j))
             if (rand.nextInt(0, 256) < 50){
                 if (stars[Pair(i, j)] == null)
-                    stars[Pair(i, j)] = DynamicBall(
+                    stars[Pair(i, j)] = Ball(
                         (2*i + 1) * MAX_RADIUS,
                         (j*2 + 1) * MAX_RADIUS,
                         MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS),

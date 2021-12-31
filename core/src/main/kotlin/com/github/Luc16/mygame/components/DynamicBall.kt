@@ -49,7 +49,7 @@ open class DynamicBall(iniX: Float,
         if (speed < 0) speed = 0f
     }
 
-    fun collideFixedBall(other: DynamicBall, delta: Float): Boolean {
+    fun collideFixedBall(other: Ball, delta: Float): Boolean {
         val vec = Vector2(other.x - nextPos.x, other.y - nextPos.y)
         val dot = vec.dot(direction)
         val cpOnLine = Vector2(nextPos.x + direction.x*dot, nextPos.y + direction.y*dot)
@@ -91,12 +91,18 @@ open class DynamicBall(iniX: Float,
         val tf = if (t1 in 0f..1f) t1 else t2
 
         if (tf in 0f..1f){
-            val backMov = (tf - 1)*speed*delta
+            val normal = Vector2(nextPos.x - other.nextPos.x, nextPos.y - other.nextPos.y).nor()
+            val extraMov = tf - 1
+            val backMov = extraMov*speed*delta
             nextPos.add(direction.x*backMov, direction.y*backMov)
-            val otherBackMov = (tf - 1)*other.speed*delta
+            bounce(normal)
+            nextPos.add(backMov*direction.x, backMov*direction.y)
+
+            val otherBackMov = extraMov*other.speed*delta
             other.nextPos.add(other.direction.x*otherBackMov, other.direction.y*otherBackMov)
-            speed = 0f
-            other.speed = 0f
+            other.bounce(normal)
+            other.nextPos.add(otherBackMov*direction.x, otherBackMov*direction.y)
+
             return true
         }
         return false

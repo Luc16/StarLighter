@@ -18,7 +18,7 @@ open class Ball(
         get() = pos.y
         set(value) {pos.y = value}
 
-    fun draw(renderer: ShapeRenderer){
+    open fun draw(renderer: ShapeRenderer){
         renderer.color = color
         renderer.circle(x, y, radius)
     }
