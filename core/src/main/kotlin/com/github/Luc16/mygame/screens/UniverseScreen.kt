@@ -12,16 +12,13 @@ import com.github.Luc16.mygame.WIDTH
 import com.github.Luc16.mygame.components.Ball
 import com.github.Luc16.mygame.components.DynamicBall
 import com.github.Luc16.mygame.components.PlayerBall
+import com.github.Luc16.simulations.screens.CLICK_MARGIN
+import com.github.Luc16.simulations.screens.MAX_BC_STAR_RADIUS
+import com.github.Luc16.simulations.screens.MAX_RADIUS
+import com.github.Luc16.simulations.screens.MIN_RADIUS
 import ktx.graphics.moveTo
 import ktx.graphics.use
 import kotlin.random.Random
-
-
-const val MAX_RADIUS = 500f
-const val MIN_RADIUS = 50f
-const val CLICK_MARGIN = 100f
-
-const val MAX_BC_STAR_RADIUS = 3f
 
 class UniverseScreen(game: MyGame): CustomScreen(game) {
     private val camera = viewport.camera

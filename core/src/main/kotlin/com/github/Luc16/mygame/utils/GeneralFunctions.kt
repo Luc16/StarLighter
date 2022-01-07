@@ -34,3 +34,8 @@ fun bhaskara(a: Float, b: Float, c: Float): Pair<Float?, Float?>{
     return Pair((-b+sqrtDelta)/(2*a), (-b-sqrtDelta)/(2*a))
 }
 
+data class IVector2(var i: Int, var j: Int) {
+    override fun toString(): String {
+        return "($i, $j)"
+    }
+}

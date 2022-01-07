@@ -16,9 +16,10 @@ class Enemy(x: Float,
     DynamicBall(x, y, radius, color, maxSpeed = maxSpeed) {
     private val bullets = mutableListOf<DynamicBall>()
     private var shootTimer = 0
-    private var live = true
+    var live = true
 
     fun update(delta: Float, player: PlayerBall) {
+
         if (!live) return
         shootTimer += if (shootTimer > SHOOT_TIME) 0 else 1
         direction.set(player.x - x, player.y - y).nor()
@@ -54,12 +55,11 @@ class Enemy(x: Float,
     }
 
     override fun draw(renderer: ShapeRenderer) {
-        if (live) {
-            renderer.color = Color.YELLOW
-            val radiusSum = radius+ BULLET_RADIUS
-            renderer.circle(x + radiusSum*direction.x, y + radiusSum*direction.y, BULLET_RADIUS*(shootTimer)/SHOOT_TIME)
-            bullets.forEach { it.draw(renderer) }
-            super.draw(renderer)
-        }
+        if (!live) return
+        renderer.color = Color.YELLOW
+        val radiusSum = radius+ BULLET_RADIUS
+        renderer.circle(x + radiusSum*direction.x, y + radiusSum*direction.y, BULLET_RADIUS*(shootTimer)/SHOOT_TIME)
+        bullets.forEach { it.draw(renderer) }
+        super.draw(renderer)
     }
 }

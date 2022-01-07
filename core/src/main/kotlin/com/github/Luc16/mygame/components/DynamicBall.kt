@@ -114,10 +114,7 @@ open class DynamicBall(iniX: Float,
             val normal = Vector2(nextPos.x - other.nextPos.x, nextPos.y - other.nextPos.y).nor()
 
             nextPos.add(normal.x * offset/2, normal.y * offset/2)
-            bounce(normal)
-
             other.nextPos.add(-normal.x * offset/2, -normal.y * offset/2)
-            other.bounce(normal)
         }
 
     }
