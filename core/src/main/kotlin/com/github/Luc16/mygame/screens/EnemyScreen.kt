@@ -3,7 +3,9 @@ package com.github.Luc16.simulations.screens
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
+import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.github.Luc16.mygame.HEIGHT
@@ -20,7 +22,7 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 const val MAX_RADIUS = 500f
-const val MIN_RADIUS = 50f
+const val MIN_RADIUS = 100f
 const val CLICK_MARGIN = 100f
 const val MAX_BC_STAR_RADIUS = 3f
 
@@ -42,6 +44,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private var score = 0
     private val textLayout = GlyphLayout()
     private var frame = 0
+    private val minimapSprite = Sprite()
 
     override fun show() {
         val file = Gdx.files.local("assets/seed.txt")
@@ -49,6 +52,11 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         file.writeString("$seedOffset", false)
 
         seedOffset = 7 // Tirar dps
+
+        minimapSprite.run {
+            setRegion(Texture(Gdx.files.internal("assets/minimap.png")))
+            setSize(200f, 200f)
+        }
     }
 
     private fun createSeed(i: Int, j: Int): Int = i and 0xFFFF shl 16 or (j and 0xFFFF) + seedOffset
@@ -79,6 +87,11 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         batch.use(camera.combined){
             textLayout.setText(font, "Score: $score")
             font.draw(batch, textLayout, offset.x + WIDTH - textLayout.width - 5, offset.y + HEIGHT - textLayout.height - 5)
+
+            minimapSprite.run {
+                setPosition(offset.x + 5f, offset.y + HEIGHT - height - 5)
+                draw(batch)
+            }
         }
     }
 
@@ -100,25 +113,26 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         }
     }
 
-    private fun drawMinimap(renderer: ShapeRenderer, sizeX: Float = 200f, sizeY: Float = 140f, ratio: Float = 0.01f) {
+    private fun drawMinimap(renderer: ShapeRenderer, sizeX: Float = 200f, sizeY: Float = 200f, ratio: Float = 0.02f) {
         val mapNumSectorsX = (sizeX/(2*MAX_RADIUS*ratio)).toInt()
         val mapNumSectorsY = (sizeY/(2*MAX_RADIUS*ratio)).toInt()
-        val startSectorX = (player.x/(2*MAX_RADIUS) - mapNumSectorsX/2).toInt()
-        val startSectorY = (player.y/(2*MAX_RADIUS) - mapNumSectorsY/2).toInt()
+        val startSectorX = (player.x/(2*MAX_RADIUS)).toInt() - mapNumSectorsX/2
+        val startSectorY = (player.y/(2*MAX_RADIUS)).toInt() - mapNumSectorsY/2
 
-        val startPoint = Vector2(offset.x + 5f, offset.y + HEIGHT - sizeY + 5)
+
+        val startPoint = Vector2(offset.x + 5f, offset.y + HEIGHT - sizeY - 5)
         renderer.color = Color.LIGHT_GRAY
         renderer.rect(startPoint.x, startPoint.y, sizeX, sizeY)
 
-        forEachStarSectorIn(0..mapNumSectorsX, 0..mapNumSectorsY) { i, j ->
+        forEachStarSectorIn(2..mapNumSectorsX - 2, 2..mapNumSectorsY - 2) { i, j ->
             val rand = Random(createSeed(startSectorX + i,startSectorY + j))
-            val correction = Vector2(if (player.x > 0f) 2*MAX_RADIUS else 0f, if (player.y > 0f) 2*MAX_RADIUS else 0f)
             if (rand.nextInt(0, 256) < STAR_LIMIT){
+                renderer.color = Color.BLUE
                 renderer.color = Color.GRAY
                 stars[IVector2(startSectorX + i,startSectorY + j)]?.let { star -> renderer.color = star.color }
                 renderer.circle(
-                    startPoint.x + ((2*i + 1)*MAX_RADIUS - player.x + (player.x/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS + correction.x)*ratio,
-                    startPoint.y + ((2*j + 1)*MAX_RADIUS - player.y + (player.y/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS + correction.y)*ratio,
+                    startPoint.x + ((2*i + 1)*MAX_RADIUS - player.x + (player.x/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
+                    startPoint.y + ((2*j + 1)*MAX_RADIUS - player.y + (player.y/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
                     ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
                 )
             }
