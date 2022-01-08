@@ -44,7 +44,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private var score = 0
     private val textLayout = GlyphLayout()
     private var frame = 0
-    private val minimapSprite = Sprite()
+    private val minimapSprite = Sprite(Texture(Gdx.files.local("assets/minimap.png")))
 
     override fun show() {
         val file = Gdx.files.local("assets/seed.txt")
@@ -53,10 +53,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
 
         seedOffset = 7 // Tirar dps
 
-        minimapSprite.run {
-            setRegion(Texture(Gdx.files.internal("assets/minimap.png")))
-            setSize(200f, 200f)
-        }
+        minimapSprite.setSize(200f, 200f)
     }
 
     private fun createSeed(i: Int, j: Int): Int = i and 0xFFFF shl 16 or (j and 0xFFFF) + seedOffset
@@ -124,17 +121,22 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         renderer.color = Color.LIGHT_GRAY
         renderer.rect(startPoint.x, startPoint.y, sizeX, sizeY)
 
-        forEachStarSectorIn(2..mapNumSectorsX - 2, 2..mapNumSectorsY - 2) { i, j ->
+        forEachStarSectorIn(0 until mapNumSectorsX, 0 until mapNumSectorsY) { i, j ->
             val rand = Random(createSeed(startSectorX + i,startSectorY + j))
             if (rand.nextInt(0, 256) < STAR_LIMIT){
                 renderer.color = Color.BLUE
                 renderer.color = Color.GRAY
                 stars[IVector2(startSectorX + i,startSectorY + j)]?.let { star -> renderer.color = star.color }
-                renderer.circle(
+                val circlePos = Vector2(
                     startPoint.x + ((2*i + 1)*MAX_RADIUS - player.x + (player.x/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
                     startPoint.y + ((2*j + 1)*MAX_RADIUS - player.y + (player.y/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
-                    ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
                 )
+                val radius = ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
+                if (circlePos.x - radius > startPoint.x &&
+                        circlePos.x + radius < startPoint.x + sizeX &&
+                            circlePos.y - radius > startPoint.y &&
+                                circlePos.y + radius < startPoint.y + sizeY)
+                    renderer.circle(circlePos.x, circlePos.y, radius)
             }
         }
 
