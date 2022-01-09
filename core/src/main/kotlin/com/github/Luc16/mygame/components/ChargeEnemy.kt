@@ -13,7 +13,7 @@ class ChargeEnemy(x: Float,
                   y: Float,
                   radius: Float,
                   private val distOfAction: Float,
-                  maxSpeed: Float = 500f,
+                  maxSpeed: Float = 600f,
                   color: Color = Color.YELLOW):
     Enemy(x, y, radius, color = color, maxSpeed = maxSpeed) {
     private var chargeTimer = 0
@@ -32,9 +32,9 @@ class ChargeEnemy(x: Float,
                 if (chargingTime == 0) {
                     charging = true
                 }
-                player.collideMovingBall(this, delta)
+                player.collideEnemy(this, delta)
             } else {
-                live = !player.collideMovingBall(this, delta)
+                live = !player.collideEnemy(this, delta)
                 speed = 0f
             }
         } else speed = maxSpeed

@@ -13,7 +13,7 @@ class BulletEnemy(x: Float,
             private val distOfAction: Float,
             maxSpeed: Float = 500f,
             color: Color = Color.YELLOW):
-    Enemy(x, y, radius, color = color) {
+    Enemy(x, y, radius, color = color, maxSpeed = maxSpeed) {
     private val bullets = linkedSetOf<DynamicBall>()
     private var shootTimer = 0
 
@@ -24,7 +24,7 @@ class BulletEnemy(x: Float,
         direction.set(player.x - x, player.y - y).nor()
         update(delta)
         if (dist2(pos, player.pos) <= distOfAction) {
-            live = !player.collideMovingBall(this, delta)
+            live = !player.collideEnemy(this, delta)
             speed = 0f
             if (shootTimer > SHOOT_TIME) {
                 shootTimer = 0
@@ -43,7 +43,7 @@ class BulletEnemy(x: Float,
         val bulletsToRemove = linkedSetOf<DynamicBall>()
         bullets.forEach { bullet ->
             bullet.update(delta)
-            if (player.collideMovingBall(bullet, delta)) {
+            if (player.collideBullet(bullet, delta)) {
                 bulletsToRemove.add(bullet)
                 player.speed = 0f
             }

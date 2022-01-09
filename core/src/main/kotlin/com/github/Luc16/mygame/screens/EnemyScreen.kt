@@ -31,7 +31,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private val enemies = mutableListOf<Enemy>(ChargeEnemy(3000f, 3000f, 20f, 200*200f, color = Color.BLUE))
+    private val enemies = mutableListOf<Enemy>(BulletEnemy(3000f, 3000f, 20f, 200*200f, color = Color.BLUE))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2

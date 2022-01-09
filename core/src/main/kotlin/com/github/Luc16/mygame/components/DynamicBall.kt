@@ -78,36 +78,6 @@ open class DynamicBall(iniX: Float,
         return false
     }
 
-    fun collideMovingBall(other: DynamicBall, delta: Float): Boolean{
-        val rSum = radius + other.radius
-        val dx = direction.x*speed*delta - other.direction.x*other.speed*delta
-        val dy = direction.y*speed*delta - other.direction.y*other.speed*delta
-        val ddx = x - other.x
-        val ddy = y - other.y
-
-        val (t1, t2) = bhaskara(dx*dx + dy*dy, 2*(ddx*dx + ddy*dy), ddx*ddx + ddy*ddy - rSum*rSum)
-        if (t1 == null || t2 == null) return false
-
-        val tf = if (t1 in 0f..1f) t1 else t2
-
-        if (tf in 0f..1f){
-            val normal = Vector2(nextPos.x - other.nextPos.x, nextPos.y - other.nextPos.y).nor()
-            val extraMov = tf - 1
-            val backMov = extraMov*speed*delta
-            nextPos.add(direction.x*backMov, direction.y*backMov)
-            bounce(normal)
-            nextPos.add(backMov*direction.x, backMov*direction.y)
-
-            val otherBackMov = extraMov*other.speed*delta
-            other.nextPos.add(other.direction.x*otherBackMov, other.direction.y*otherBackMov)
-            other.bounce(normal)
-            other.nextPos.add(otherBackMov*direction.x, otherBackMov*direction.y)
-
-            return true
-        }
-        return false
-    }
-
     fun collideBall(other: DynamicBall){
         if (dist2(nextPos, other.nextPos) < (radius + other.radius)*(radius + other.radius)){
             val offset = radius + other.radius - sqrt(dist2(nextPos, other.nextPos))
@@ -119,7 +89,7 @@ open class DynamicBall(iniX: Float,
 
     }
 
-    private fun bounce(normal: Vector2){
+    fun bounce(normal: Vector2){
         val dot = direction.dot(normal)
         direction.x -= 2*normal.x*dot
         direction.y -= 2*normal.y*dot
