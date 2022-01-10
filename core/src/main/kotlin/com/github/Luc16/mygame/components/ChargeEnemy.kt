@@ -32,7 +32,7 @@ class ChargeEnemy(x: Float,
                 if (chargingTime == 0) {
                     charging = true
                 }
-                player.collideEnemy(this, delta)
+                if (player.collideEnemy(this, delta)) player.speed = 0f
             } else {
                 live = !player.collideEnemy(this, delta)
                 speed = 0f
