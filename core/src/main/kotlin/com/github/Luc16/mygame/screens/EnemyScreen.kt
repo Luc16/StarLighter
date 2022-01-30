@@ -14,6 +14,7 @@ import com.github.Luc16.mygame.WIDTH
 import com.github.Luc16.mygame.components.*
 import com.github.Luc16.mygame.screens.*
 import com.github.Luc16.mygame.utils.IVector2
+import com.github.Luc16.mygame.utils.dist2
 import ktx.graphics.moveTo
 import ktx.graphics.use
 import kotlin.math.roundToInt
@@ -31,7 +32,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private val enemies = mutableListOf<Enemy>(DroneEnemy(3000f, 3000f, 20f, 200*200f, color = Color.BLUE))
+    private val enemies = linkedSetOf<Enemy>()//DroneEnemy(3000f, 3000f, 20f, 200*200f, color = Color.BLUE))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -40,8 +41,10 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val bGNumSectorsY = (HEIGHT/(2*MAX_BC_STAR_RADIUS)).toInt() + 2
     private var seedOffset = 0
     private var score = 0
-    private val textLayout = GlyphLayout()
     private var frame = 0
+    private var level = 0
+    private var spawnFrameRate = 180
+    private val textLayout = GlyphLayout()
     private val minimapSprite = Sprite(Texture(Gdx.files.local("assets/minimap.png")))
 
     override fun show() {
@@ -68,15 +71,19 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         frame++
         handleInputs()
         player.update(delta)
-        enemies.forEachIndexed { i, enemy ->
-            enemy.update(delta, player)
-            for(j in i + 1 until enemies.size){
-                enemy.collideBall(enemies[j])
-            }
-        }
+        updateEnemies(delta)
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) player.speed = 0f
         offset.set(player.x - WIDTH/2, player.y - HEIGHT/2)
+
+        when (score) {
+            in 0..50 -> level = 0
+            in 60..150 -> level = 1
+            in 160..250 -> level = 2
+            in 260..340 -> level = 3
+            in 350..420 -> level = 4
+            in 430..500 -> level = 5
+        }
 
         draw(delta)
         batch.use(camera.combined){
@@ -108,6 +115,33 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         }
     }
 
+    private fun updateEnemies(delta: Float){
+        val enemiesToRemove = linkedSetOf<Enemy>()
+        enemies.forEach { enemy ->
+            enemy.update(delta, player)
+            enemies.forEach { enemy.collideBall(it) }
+            if (!enemy.live) {
+                enemiesToRemove.add(enemy)
+                score += 10
+            }
+        }
+        enemiesToRemove.forEach { enemies.remove(it) }
+
+        spawnEnemies()
+    }
+
+    private fun spawnEnemies(){
+        if (enemies.size < level && frame%spawnFrameRate == 0){
+            val x = listOf(player.x - 4500, player.x + 4500).random()
+            val y = listOf(player.y - 4500, player.y + 4500).random()
+            enemies.add(when (Random.nextInt(1, 4)){
+                1 -> BulletEnemy(x, y, 20f, 200*200f, color = Color.ORANGE)
+                2 -> ChargeEnemy(x, y, 20f, 200*200f, color = Color.GOLDENROD)
+                else -> DroneEnemy(x, y, 20f, 200*200f, color = Color.BLUE)
+            })
+        }
+    }
+
     private fun drawMinimap(renderer: ShapeRenderer, sizeX: Float = 200f, sizeY: Float = 200f, ratio: Float = 0.02f) {
         val mapNumSectorsX = (sizeX/(2*MAX_RADIUS*ratio)).toInt()
         val mapNumSectorsY = (sizeY/(2*MAX_RADIUS*ratio)).toInt()
@@ -122,14 +156,13 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         forEachStarSectorIn(0 until mapNumSectorsX, 0 until mapNumSectorsY) { i, j ->
             val rand = Random(createSeed(startSectorX + i,startSectorY + j))
             if (rand.nextInt(0, 256) < STAR_LIMIT){
-                renderer.color = Color.BLUE
-                renderer.color = Color.GRAY
+                val radius = ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
+                renderer.color = if (rand.nextInt(0, 100) < 33) Color.YELLOW else Color.GRAY
                 stars[IVector2(startSectorX + i,startSectorY + j)]?.let { star -> renderer.color = star.color }
                 val circlePos = Vector2(
                     startPoint.x + ((2*i + 1)*MAX_RADIUS - player.x + (player.x/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
                     startPoint.y + ((2*j + 1)*MAX_RADIUS - player.y + (player.y/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
                 )
-                val radius = ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
                 if (circlePos.x - radius > startPoint.x &&
                         circlePos.x + radius < startPoint.x + sizeX &&
                             circlePos.y - radius > startPoint.y &&
@@ -141,10 +174,9 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         renderer.color = Color.BLACK
         renderer.circle(startPoint.x + sizeX/2, startPoint.y + sizeY/2, 2f)
 
-        renderer.color = Color.BLUE
         enemies.forEach {
-            if (it.live)
-                renderer.circle(startPoint.x + sizeX/2 + (it.x - offset.x)*ratio, startPoint.y + sizeY/2 + (it.y - offset.y)*ratio, 3f)
+            renderer.color = it.color
+            renderer.circle(startPoint.x + sizeX/2 + (it.x - offset.x)*ratio, startPoint.y + sizeY/2 + (it.y - offset.y)*ratio, 3f)
         }
 
     }
@@ -183,7 +215,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
                         (2*i + 1) * MAX_RADIUS,
                         (2*j + 1) * MAX_RADIUS,
                         MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS),
-                        color = Color.GRAY
+                        color = if (rand.nextInt(0, 100) < 33) Color.YELLOW else Color.GRAY
                     )
                 stars[IVector2(i, j)]?.let { star ->
                     if (player.collideFixedBall(star, delta)) {
@@ -192,9 +224,13 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
                             return@forEachStarSectorIn
                         }
                         star.color = Color.YELLOW
-                        score += 100
+                        score += 10
                     }
-                    enemies.forEach { if (it.live) it.live = !it.collideFixedBall(star, delta) }
+                    enemies.forEach {
+                        if (it.collideFixedBall(star, delta)) {
+                            it.live = false
+                        }
+                    }
                     star.draw(renderer)
                 }
             }

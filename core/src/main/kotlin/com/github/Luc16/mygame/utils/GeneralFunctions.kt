@@ -10,7 +10,10 @@ import kotlin.random.Random
 fun Float.toRad(): Float = PI.toFloat() * this/180
 fun Float.toDeg(): Float = 180 * this/PI.toFloat()
 
-fun Vector2.ortho(): Vector2 = Vector2(-this.y, this.x)
+fun Vector2.ortho(): Vector2 = Vector2(-y, x)
+operator fun Vector2.plus(other: Vector2): Vector2 = Vector2(x + other.x, y + other.y)
+operator fun Vector2.minus(other: Vector2): Vector2 = Vector2(x - other.x, y - other.y)
+operator fun Vector2.times(scalar: Float): Vector2 = Vector2(x*scalar, y*scalar)
 
 fun Camera.translate(x: Float = 0f, y: Float = 0f) {
     translate(x, y, 0f)

@@ -11,7 +11,7 @@ const val DEATH_TIME = 60*60
 class Drone(x: Float,
             y: Float,
             radius: Float,
-            maxSpeed: Float = 800f,
+            maxSpeed: Float = 650f,
             initialDir: Vector2 = Vector2(),
             color: Color = Color.YELLOW):
     Enemy(x, y, radius, color = color, maxSpeed = maxSpeed, initialDir = initialDir) {

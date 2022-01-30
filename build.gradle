@@ -28,7 +28,7 @@ configure(subprojects - project(':android')) {
 
 subprojects {
 	version = '0.0.1'
-	ext.appName = 'BouncyBall'
+	ext.appName = 'StarLighter'
 	repositories {
 		mavenLocal()
 		mavenCentral()
@@ -38,4 +38,4 @@ subprojects {
 	}
 }
 
-eclipse.project.name = 'BouncyBall' + '-parent'
+eclipse.project.name = 'MyGame' + '-parent'

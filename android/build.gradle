@@ -30,7 +30,7 @@ android {
 		exclude 'META-INF/dependencies.txt'
 	}
 	defaultConfig {
-		applicationId 'com.github.Luc16.com.github.Luc16.boucyball.BouncyBall'
+		applicationId 'com.github.Luc16.com.github.Luc16.mygame.MyGame'
 		minSdkVersion 19
 		targetSdkVersion 30
 		versionCode 1
@@ -123,7 +123,7 @@ task run(type: Exec) {
 	}
 
 	def adb = path + "/platform-tools/adb"
-	commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.github.Luc16.com.github.Luc16.boucyball.BouncyBall/com.github.Luc16.com.github.Luc16.boucyball.BouncyBall.AndroidLauncher'
+	commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.github.Luc16.com.github.Luc16.mygame.MyGame/com.github.Luc16.com.github.Luc16.mygame.MyGame.AndroidLauncher'
 }
 
 eclipse.project.name = appName + "-android"

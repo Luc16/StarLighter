@@ -1,4 +1,4 @@
-package com.github.Luc16.BouncyBall.android
+package com.github.Luc16.mygame.android
 
 import com.badlogic.gdx.backends.android.AndroidApplication
 import android.os.Bundle

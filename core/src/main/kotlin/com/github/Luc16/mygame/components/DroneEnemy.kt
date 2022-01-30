@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.github.Luc16.mygame.utils.dist2
 import com.github.Luc16.mygame.utils.ortho
+import com.github.Luc16.mygame.utils.times
 
 class DroneEnemy(x: Float,
                   y: Float,
@@ -31,7 +32,7 @@ class DroneEnemy(x: Float,
                 drones.forEach { it.live = false }
             }
             if (!dronesReleased) {
-                val dirs = listOf(direction, direction.ortho(), direction.ortho().scl(-1f))
+                val dirs = listOf(direction*-1f, direction.ortho(), direction.ortho()*-1f)
                 repeat(3){
                     drones.add(Drone(x, y, 8f, color = Color.YELLOW, initialDir = dirs[it]))
                 }

@@ -8,7 +8,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport
 import com.github.Luc16.mygame.screens.CustomScreen
 import com.github.Luc16.mygame.screens.UniverseScreen
 import com.github.Luc16.simulations.screens.*
-//import com.github.Luc16.bouncyball.screens.PrototypeScreen
 import ktx.app.KtxGame
 
 const val WIDTH = 450f

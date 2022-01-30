@@ -3,8 +3,8 @@ package com.github.Luc16.mygame.components
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
-import com.github.Luc16.mygame.utils.bhaskara
-import com.github.Luc16.mygame.utils.translate
+import com.github.Luc16.mygame.utils.*
+import kotlin.math.sqrt
 
 class PlayerBall(x: Float, y: Float, radius: Float,
                  private val camera: Camera,
@@ -22,25 +22,29 @@ class PlayerBall(x: Float, y: Float, radius: Float,
     }
 
     fun collideEnemy(enemy: Enemy, delta: Float): Boolean{
-        val rSum = radius + enemy.radius
-        val dx = direction.x*speed*delta - enemy.direction.x*enemy.speed*delta
-        val dy = direction.y*speed*delta - enemy.direction.y*enemy.speed*delta
-        val ddx = x - enemy.x
-        val ddy = y - enemy.y
+        val vec = enemy.pos - nextPos
+        val dot = vec.dot(direction)
+        val cpOnLine = nextPos + direction*dot
+        val dotCPDir = direction.dot(cpOnLine)
 
-        val (t1, t2) = bhaskara(dx*dx + dy*dy, 2*(ddx*dx + ddy*dy), ddx*ddx + ddy*ddy - rSum*rSum)
-        if (t1 == null || t2 == null) return false
+        val distToLine2 = dist2(enemy.pos, cpOnLine)
+        val distToCompare2 = when {
+            dotCPDir > direction.dot(nextPos) -> dist2(enemy.pos, nextPos)
+            dotCPDir < direction.dot(pos) -> dist2(enemy.pos, pos)
+            else -> distToLine2
+        }
 
-        val tf = if (t1 in 0f..1f) t1 else t2
-
-        if (tf in 0f..1f){
-            val normal = Vector2(nextPos.x - enemy.nextPos.x, nextPos.y - enemy.nextPos.y).nor()
-            val extraMov = tf - 1
-            val backMov = extraMov*speed*delta
-            nextPos.add(direction.x*backMov, direction.y*backMov)
+        val radiusSum2 = (radius + enemy.radius)*(radius + enemy.radius)
+        if (distToCompare2 <= radiusSum2){
+            val offset = sqrt(radiusSum2 - distToLine2) //+ 0.1f
+            val prevDir = Vector2(direction)
+            val normal = (nextPos - enemy.pos).nor()
             bounce(normal)
-            nextPos.add(backMov*direction.x, backMov*direction.y)
-
+            val movementCorrection = speed*delta - sqrt(dist2(pos, pos)) + 0.01f
+            nextPos.set(
+                cpOnLine.x - prevDir.x*offset + direction.x*movementCorrection,
+                cpOnLine.y - prevDir.y*offset + direction.y*movementCorrection
+            )
             return true
         }
         return false

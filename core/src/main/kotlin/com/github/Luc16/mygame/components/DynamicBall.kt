@@ -3,9 +3,7 @@ package com.github.Luc16.mygame.components
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
-import com.github.Luc16.mygame.utils.bhaskara
-import com.github.Luc16.mygame.utils.dist2
-import com.github.Luc16.mygame.utils.toRad
+import com.github.Luc16.mygame.utils.*
 import kotlin.math.*
 
 const val MAX_SPEED = 600f
@@ -43,16 +41,15 @@ open class DynamicBall(iniX: Float,
     }
 
     open fun update(delta: Float){
-//        move(direction.x*speed/60, direction.y*speed/60) //???????????
         move(direction.x*speed*delta, direction.y*speed*delta)
         speed -= deceleration*delta
         if (speed < 0) speed = 0f
     }
 
     fun collideFixedBall(other: Ball, delta: Float): Boolean {
-        val vec = Vector2(other.x - nextPos.x, other.y - nextPos.y)
+        val vec = other.pos - nextPos
         val dot = vec.dot(direction)
-        val cpOnLine = Vector2(nextPos.x + direction.x*dot, nextPos.y + direction.y*dot)
+        val cpOnLine = nextPos + direction*dot
         val dotCPDir = direction.dot(cpOnLine)
 
         val distToLine2 = dist2(other.pos, cpOnLine)
@@ -66,7 +63,7 @@ open class DynamicBall(iniX: Float,
         if (distToCompare2 <= radiusSum2){
             val offset = sqrt(radiusSum2 - distToLine2) //+ 0.1f
             val prevDir = Vector2(direction)
-            val normal = Vector2(nextPos.x - other.x, nextPos.y - other.y).nor()
+            val normal = (nextPos - other.pos).nor()
             bounce(normal)
             val movementCorrection = speed*delta - sqrt(dist2(pos, pos)) + 0.01f
             nextPos.set(
