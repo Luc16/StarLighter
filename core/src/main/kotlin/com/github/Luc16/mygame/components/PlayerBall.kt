@@ -36,6 +36,7 @@ class PlayerBall(x: Float, y: Float, radius: Float,
 
         val radiusSum2 = (radius + enemy.radius)*(radius + enemy.radius)
         if (distToCompare2 <= radiusSum2){
+            if (enemy is ChargeEnemy && enemy.charging) return true
             val offset = sqrt(radiusSum2 - distToLine2) //+ 0.1f
             val prevDir = Vector2(direction)
             val normal = (nextPos - enemy.pos).nor()
@@ -63,6 +64,12 @@ class PlayerBall(x: Float, y: Float, radius: Float,
         val tf = if (t1 in 0f..1f) t1 else t2
 
         if (tf in 0f..1f) {
+            val normal = Vector2(nextPos.x - bullet.nextPos.x, nextPos.y - bullet.nextPos.y).nor()
+            val extraMov = tf - 1
+
+            val bulletBackMov = extraMov*bullet.speed*delta
+            bullet.nextPos.add(bullet.direction.x*bulletBackMov, bullet.direction.y*bulletBackMov)
+            bullet.bounce(normal)
             speed = 0f
             return true
         }

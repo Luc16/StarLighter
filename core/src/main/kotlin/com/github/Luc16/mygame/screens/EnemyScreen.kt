@@ -17,6 +17,7 @@ import com.github.Luc16.mygame.utils.IVector2
 import com.github.Luc16.mygame.utils.dist2
 import ktx.graphics.moveTo
 import ktx.graphics.use
+import javax.swing.DropMode
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -32,7 +33,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private val enemies = linkedSetOf<Enemy>()//DroneEnemy(3000f, 3000f, 20f, 200*200f, color = Color.BLUE))
+    private val enemies = linkedSetOf<Enemy>(BulletEnemy(500f, 500f, 20f, 200*200f, color = Color.PINK))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -76,13 +77,14 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) player.speed = 0f
         offset.set(player.x - WIDTH/2, player.y - HEIGHT/2)
 
-        when (score) {
-            in 0..50 -> level = 0
-            in 60..150 -> level = 1
-            in 160..250 -> level = 2
-            in 260..340 -> level = 3
-            in 350..420 -> level = 4
-            in 430..500 -> level = 5
+        level = when (score) {
+            in 0..50 -> 0
+            in 60..150 -> 1
+            in 160..250 -> 2
+            in 260..340 -> 3
+            in 350..420 -> 4
+            in 430..500 -> 5
+            else -> level
         }
 
         draw(delta)
@@ -136,7 +138,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
             val y = listOf(player.y - 4500, player.y + 4500).random()
             enemies.add(when (Random.nextInt(1, 4)){
                 1 -> BulletEnemy(x, y, 20f, 200*200f, color = Color.ORANGE)
-                2 -> ChargeEnemy(x, y, 20f, 200*200f, color = Color.GOLDENROD)
+                2 -> ChargeEnemy(x, y, 20f, 200*200f, color = Color.PINK)
                 else -> DroneEnemy(x, y, 20f, 200*200f, color = Color.BLUE)
             })
         }
@@ -155,6 +157,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
 
         forEachStarSectorIn(0 until mapNumSectorsX, 0 until mapNumSectorsY) { i, j ->
             val rand = Random(createSeed(startSectorX + i,startSectorY + j))
+
             if (rand.nextInt(0, 256) < STAR_LIMIT){
                 val radius = ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
                 renderer.color = if (rand.nextInt(0, 100) < 33) Color.YELLOW else Color.GRAY
@@ -176,7 +179,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
 
         enemies.forEach {
             renderer.color = it.color
-            renderer.circle(startPoint.x + sizeX/2 + (it.x - offset.x)*ratio, startPoint.y + sizeY/2 + (it.y - offset.y)*ratio, 3f)
+            renderer.circle(startPoint.x + sizeX/2 + (it.x - offset.x)*ratio - 5, startPoint.y + sizeY/2 + (it.y - offset.y)*ratio - 5, 3f)
         }
 
     }

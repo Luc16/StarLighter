@@ -17,7 +17,7 @@ class ChargeEnemy(x: Float,
                   color: Color = Color.YELLOW):
     Enemy(x, y, radius, color = color, maxSpeed = maxSpeed) {
     private var chargeTimer = 0
-    private var charging = false
+    var charging = false
     private var chargingTime = 0
 
     override fun update(delta: Float, player: PlayerBall) {

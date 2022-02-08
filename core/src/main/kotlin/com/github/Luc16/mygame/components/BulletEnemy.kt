@@ -2,10 +2,13 @@ package com.github.Luc16.mygame.components
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Vector2
 import com.github.Luc16.mygame.utils.dist2
 
-const val BULLET_RADIUS = 8f
 const val SHOOT_TIME = 90
+const val BULLET_RADIUS = 8f
+const val BULLET_SPEED = 800f
+const val BULLET_LIFETIME = 300
 
 class BulletEnemy(x: Float,
             y: Float,
@@ -14,7 +17,7 @@ class BulletEnemy(x: Float,
             maxSpeed: Float = 500f,
             color: Color = Color.YELLOW):
     Enemy(x, y, radius, color = color, maxSpeed = maxSpeed) {
-    private val bullets = linkedSetOf<DynamicBall>()
+    private val bullets = linkedSetOf<Bullet>()
     private var shootTimer = 0
 
     override fun update(delta: Float, player: PlayerBall) {
@@ -28,27 +31,22 @@ class BulletEnemy(x: Float,
             speed = 0f
             if (shootTimer > SHOOT_TIME) {
                 shootTimer = 0
-                bullets.add(DynamicBall(
-                    x + 18f*direction.x,
-                    y + 18f*direction.y,
+                bullets.add(Bullet(
+                    Vector2( x + 18f*direction.x, y + 18f*direction.y),
                     BULLET_RADIUS,
-                    initialDir = direction,
-                    maxSpeed = 800f,
+                    direction,
+                    BULLET_LIFETIME,
+                    BULLET_SPEED,
                     color = Color.YELLOW
                 ))
             }
         }
         else speed = maxSpeed
 
-        val bulletsToRemove = linkedSetOf<DynamicBall>()
+        val bulletsToRemove = linkedSetOf<Bullet>()
         bullets.forEach { bullet ->
-            bullet.update(delta)
-            if (player.collideBullet(bullet, delta)) {
-                bulletsToRemove.add(bullet)
-                player.speed = 0f
-            }
-
-            if (dist2(bullet.pos, pos) > 500*500) bulletsToRemove.add(bullet)
+            bullet.update(delta, player)
+            if (!bullet.live) bulletsToRemove.add(bullet)
         }
         bulletsToRemove.forEach { bullets.remove(it) }
     }

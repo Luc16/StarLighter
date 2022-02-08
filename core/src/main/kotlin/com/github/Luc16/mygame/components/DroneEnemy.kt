@@ -7,6 +7,8 @@ import com.github.Luc16.mygame.utils.dist2
 import com.github.Luc16.mygame.utils.ortho
 import com.github.Luc16.mygame.utils.times
 
+const val DRONE_LIFETIME = 360
+
 class DroneEnemy(x: Float,
                   y: Float,
                   radius: Float,
@@ -33,8 +35,8 @@ class DroneEnemy(x: Float,
             }
             if (!dronesReleased) {
                 val dirs = listOf(direction*-1f, direction.ortho(), direction.ortho()*-1f)
-                repeat(3){
-                    drones.add(Drone(x, y, 8f, color = Color.YELLOW, initialDir = dirs[it]))
+                dirs.forEach{
+                    drones.add(Drone(pos, 8f, it, DRONE_LIFETIME))
                 }
             }
         }
