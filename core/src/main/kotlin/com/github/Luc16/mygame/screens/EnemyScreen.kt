@@ -33,7 +33,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private val enemies = linkedSetOf<Enemy>(BulletEnemy(500f, 500f, 20f, 200*200f, color = Color.PINK))
+    private val enemies = linkedSetOf<Enemy>(BulletEnemy(6000f, 500f, 20f, 200*200f, color = Color.PINK))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -177,10 +177,16 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         renderer.color = Color.BLACK
         renderer.circle(startPoint.x + sizeX/2, startPoint.y + sizeY/2, 2f)
 
-        enemies.forEach {
-            renderer.color = it.color
-            renderer.circle(startPoint.x + sizeX/2 + (it.x - offset.x)*ratio - 5, startPoint.y + sizeY/2 + (it.y - offset.y)*ratio - 5, 3f)
-        }
+        enemies.forEach { it.run {
+            val minimapPos = Vector2(startPoint.x + sizeX/2 + (x - player.x)*ratio, startPoint.y + sizeY/2 + (y - player.y)*ratio)
+            renderer.color = color
+            if (minimapPos.x - radius > startPoint.x &&
+                minimapPos.x + radius < startPoint.x + sizeX &&
+                minimapPos.y - radius > startPoint.y &&
+                minimapPos.y + radius < startPoint.y + sizeY)
+                    renderer.circle(minimapPos.x, minimapPos.y, 3f)
+
+        }}
 
     }
 
