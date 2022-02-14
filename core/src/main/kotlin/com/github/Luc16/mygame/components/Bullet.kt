@@ -13,7 +13,7 @@ open class Bullet(pos: Vector2,
                   color: Color = Color.YELLOW):
     DynamicBall(pos.x, pos.y, radius, color = color, maxSpeed = maxSpeed, initialDir = initialDir) {
     var timer = 1
-    private var toDie = false
+    var toDie = false
     var live = true
 
     open fun update(delta: Float, player: PlayerBall) {

@@ -10,7 +10,7 @@ class PlayerBall(x: Float, y: Float, radius: Float,
                  private val camera: Camera,
                  color: Color = Color.YELLOW):
     DynamicBall(x, y, radius, color) {
-    private var live = true
+    var lives = 4
 
     init {
         direction.setZero()
@@ -36,11 +36,15 @@ class PlayerBall(x: Float, y: Float, radius: Float,
 
         val radiusSum2 = (radius + enemy.radius)*(radius + enemy.radius)
         if (distToCompare2 <= radiusSum2){
-            if (enemy is ChargeEnemy && enemy.charging) return true
-            val offset = sqrt(radiusSum2 - distToLine2) //+ 0.1f
-            val prevDir = Vector2(direction)
             val normal = (nextPos - enemy.pos).nor()
             bounce(normal)
+            if (enemy is ChargeEnemy && enemy.charging) {
+                lives--
+                enemy.live = false
+                return true
+            }
+            val offset = sqrt(radiusSum2 - distToLine2) //+ 0.1f
+            val prevDir = Vector2(direction)
             val movementCorrection = speed*delta - sqrt(dist2(pos, pos)) + 0.01f
             nextPos.set(
                 cpOnLine.x - prevDir.x*offset + direction.x*movementCorrection,
@@ -51,7 +55,8 @@ class PlayerBall(x: Float, y: Float, radius: Float,
         return false
     }
 
-    fun collideBullet(bullet: DynamicBall, delta: Float): Boolean {
+    fun collideBullet(bullet: Bullet, delta: Float): Boolean {
+        if (bullet.toDie) return false
         val rSum = radius + bullet.radius
         val dx = direction.x*speed*delta - bullet.direction.x*bullet.speed*delta
         val dy = direction.y*speed*delta - bullet.direction.y*bullet.speed*delta
@@ -71,6 +76,7 @@ class PlayerBall(x: Float, y: Float, radius: Float,
             bullet.nextPos.add(bullet.direction.x*bulletBackMov, bullet.direction.y*bulletBackMov)
             bullet.bounce(normal)
             speed = 0f
+            lives--
             return true
         }
         return false

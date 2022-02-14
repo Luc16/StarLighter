@@ -14,7 +14,7 @@ class DroneEnemy(x: Float,
                   radius: Float,
                   private val distOfAction: Float,
                   maxSpeed: Float = 500f,
-                  color: Color = Color.YELLOW):
+                  color: Color = Color.BLUE):
     Enemy(x, y, radius, color = color, maxSpeed = maxSpeed) {
     private val drones = linkedSetOf<Drone>()
     private var dronesReleased = false

@@ -33,7 +33,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private val enemies = linkedSetOf<Enemy>(BulletEnemy(6000f, 500f, 20f, 200*200f, color = Color.PINK))
+    private var enemies = linkedSetOf<Enemy>(DroneEnemy(500f, 500f, 20f, 200*200f))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -45,7 +45,8 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private var frame = 0
     private var level = 0
     private var spawnFrameRate = 180
-    private val textLayout = GlyphLayout()
+    private val textScore = GlyphLayout()
+    private val textLife = GlyphLayout()
     private val minimapSprite = Sprite(Texture(Gdx.files.local("assets/minimap.png")))
 
     override fun show() {
@@ -89,14 +90,17 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
 
         draw(delta)
         batch.use(camera.combined){
-            textLayout.setText(font, "Score: $score")
-            font.draw(batch, textLayout, offset.x + WIDTH - textLayout.width - 5, offset.y + HEIGHT - textLayout.height - 5)
+            textScore.setText(font, "Score: $score")
+            font.draw(batch, textScore, offset.x + WIDTH - textScore.width - 5, offset.y + HEIGHT - textScore.height - 5)
+            textLife.setText(font, "Lives: ${player.lives}")
+            font.draw(batch, textLife, offset.x + WIDTH - textLife.width - 5, offset.y + HEIGHT - textLife.height - textScore.height - 20)
 
             minimapSprite.run {
                 setPosition(offset.x + 5f, offset.y + HEIGHT - height - 5)
                 draw(batch)
             }
         }
+        if (player.lives <= 0) reset()
     }
 
     private fun handleInputs() {
@@ -228,12 +232,13 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
                     )
                 stars[IVector2(i, j)]?.let { star ->
                     if (player.collideFixedBall(star, delta)) {
-                        if (star.color == Color.YELLOW) {
-                            reset()
-                            return@forEachStarSectorIn
+                        if (star.color == Color.YELLOW)
+                            player.lives--
+//                            return@forEachStarSectorIn
+                        else {
+                            star.color = Color.YELLOW
+                            score += 10
                         }
-                        star.color = Color.YELLOW
-                        score += 10
                     }
                     enemies.forEach {
                         if (it.collideFixedBall(star, delta)) {
@@ -259,12 +264,14 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
 
     private fun reset(){
         score = 0
-        seedOffset++
+//        seedOffset++
         offset.set(-WIDTH/2, -HEIGHT/2)
         stars = mutableMapOf()
         player.nextPos.setZero()
         player.pos.setZero()
         camera.moveTo(Vector2().setZero())
         player.direction.setZero()
+        player.lives = 4
+        enemies = linkedSetOf()
     }
 }
