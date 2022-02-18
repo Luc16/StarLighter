@@ -33,7 +33,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private var enemies = linkedSetOf<Enemy>(DroneEnemy(500f, 500f, 20f, 200*200f))
+    private var enemies = linkedSetOf<Enemy>(ChargeEnemy(500f, 500f, 20f, 200*200f))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -272,6 +272,6 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         camera.moveTo(Vector2().setZero())
         player.direction.setZero()
         player.lives = 4
-        enemies = linkedSetOf()
+        enemies = linkedSetOf(ChargeEnemy(500f, 500f, 20f, 200*200f))
     }
 }

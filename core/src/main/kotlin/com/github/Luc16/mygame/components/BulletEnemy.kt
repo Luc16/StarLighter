@@ -15,7 +15,7 @@ class BulletEnemy(x: Float,
             radius: Float,
             private val distOfAction: Float,
             maxSpeed: Float = 500f,
-            color: Color = Color.YELLOW):
+            color: Color = Color.ORANGE):
     Enemy(x, y, radius, color = color, maxSpeed = maxSpeed) {
     private val bullets = linkedSetOf<Bullet>()
     private var shootTimer = 0
