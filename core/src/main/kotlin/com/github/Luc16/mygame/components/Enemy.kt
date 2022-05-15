@@ -13,6 +13,7 @@ abstract class Enemy(x: Float,
                      initialDir: Vector2 = Vector2()):
     DynamicBall(x, y, radius, color, maxSpeed = maxSpeed, initialDir = initialDir) {
     var live = true
+    var crached = false
 
     abstract fun update(delta: Float, player: PlayerBall)
 }

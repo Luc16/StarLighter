@@ -12,10 +12,6 @@ import com.github.Luc16.mygame.WIDTH
 import com.github.Luc16.mygame.components.Ball
 import com.github.Luc16.mygame.components.DynamicBall
 import com.github.Luc16.mygame.components.PlayerBall
-import com.github.Luc16.simulations.screens.CLICK_MARGIN
-import com.github.Luc16.simulations.screens.MAX_BC_STAR_RADIUS
-import com.github.Luc16.simulations.screens.MAX_RADIUS
-import com.github.Luc16.simulations.screens.MIN_RADIUS
 import ktx.graphics.moveTo
 import ktx.graphics.use
 import kotlin.random.Random

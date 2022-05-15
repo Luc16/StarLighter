@@ -1,4 +1,4 @@
-package com.github.Luc16.simulations.screens
+package com.github.Luc16.mygame.screens
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
@@ -12,13 +12,10 @@ import com.github.Luc16.mygame.HEIGHT
 import com.github.Luc16.mygame.MyGame
 import com.github.Luc16.mygame.WIDTH
 import com.github.Luc16.mygame.components.*
-import com.github.Luc16.mygame.screens.*
+import com.github.Luc16.mygame.screens.CustomScreen
 import com.github.Luc16.mygame.utils.IVector2
-import com.github.Luc16.mygame.utils.dist2
 import ktx.graphics.moveTo
 import ktx.graphics.use
-import javax.swing.DropMode
-import kotlin.math.roundToInt
 import kotlin.random.Random
 
 const val MAX_RADIUS = 500f
@@ -33,7 +30,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val offset = Vector2()
     private val player = PlayerBall(0f, 0f, 10f, camera, Color.RED)
     private var prevPos = Vector2().setZero()
-    private var enemies = linkedSetOf<Enemy>(ChargeEnemy(500f, 500f, 20f, 200*200f))
+    private var enemies = linkedSetOf<Enemy>(ChargeEnemy(500f, 5000f, 20f, 200*200f))
     private var stars = mutableMapOf<IVector2, Ball>()
 
     private val numSectorsX = (WIDTH/(2*MAX_RADIUS)).toInt() + 2
@@ -41,7 +38,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
     private val bGNumSectorsX = (WIDTH/(2*MAX_BC_STAR_RADIUS)).toInt() + 2
     private val bGNumSectorsY = (HEIGHT/(2*MAX_BC_STAR_RADIUS)).toInt() + 2
     private var seedOffset = 0
-    private var score = 0
+    private var score = 500
     private var frame = 0
     private var level = 0
     private var spawnFrameRate = 180
@@ -128,7 +125,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
             enemies.forEach { enemy.collideBall(it) }
             if (!enemy.live) {
                 enemiesToRemove.add(enemy)
-                score += 10
+                if (!enemy.crached) score += 10
             }
         }
         enemiesToRemove.forEach { enemies.remove(it) }
@@ -138,17 +135,26 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
 
     private fun spawnEnemies(){
         if (enemies.size < level && frame%spawnFrameRate == 0){
-            val x = listOf(player.x - 4500, player.x + 4500).random()
-            val y = listOf(player.y - 4500, player.y + 4500).random()
+            val x: Int
+            val y: Int
+            if (Random.nextBoolean()){
+                x = listOf(-4500, 0, 4500).random()
+                y = (if (x == 0) listOf(-4500, 4500) else listOf(-4500, 0 , 4500)).random()
+            } else {
+                y = listOf(-4500, 0, 4500).random()
+                x = (if (y == 0) listOf(-4500, 4500) else listOf(-4500, 0 , 4500)).random()
+            }
+
+
             enemies.add(when (Random.nextInt(1, 4)){
-                1 -> BulletEnemy(x, y, 20f, 200*200f, color = Color.ORANGE)
-                2 -> ChargeEnemy(x, y, 20f, 200*200f, color = Color.PINK)
-                else -> DroneEnemy(x, y, 20f, 200*200f, color = Color.BLUE)
+                1 -> BulletEnemy(player.x + x, player.y + y, 20f, 200*200f, color = Color.ORANGE)
+                2 -> ChargeEnemy(player.x + x, player.y + y, 20f, 200*200f, color = Color.PINK)
+                else -> DroneEnemy(player.x + x, player.y + y, 20f, 200*200f, color = Color.BLUE)
             })
         }
     }
 
-    private fun drawMinimap(renderer: ShapeRenderer, sizeX: Float = 200f, sizeY: Float = 200f, ratio: Float = 0.02f) {
+    private fun drawMinimap(renderer: ShapeRenderer, delta: Float, sizeX: Float = 200f, sizeY: Float = 200f, ratio: Float = 0.02f) {
         val mapNumSectorsX = (sizeX/(2*MAX_RADIUS*ratio)).toInt()
         val mapNumSectorsY = (sizeY/(2*MAX_RADIUS*ratio)).toInt()
         val startSectorX = (player.x/(2*MAX_RADIUS)).toInt() - mapNumSectorsX/2
@@ -160,21 +166,40 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         renderer.rect(startPoint.x, startPoint.y, sizeX, sizeY)
 
         forEachStarSectorIn(0 until mapNumSectorsX, 0 until mapNumSectorsY) { i, j ->
-            val rand = Random(createSeed(startSectorX + i,startSectorY + j))
+            val starI = startSectorX + i
+            val starJ = startSectorY + j
+            val rand = Random(createSeed(starI, starJ))
 
             if (rand.nextInt(0, 256) < STAR_LIMIT){
-                val radius = ratio*(MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS))
-                renderer.color = if (rand.nextInt(0, 100) < 33) Color.YELLOW else Color.GRAY
-                stars[IVector2(startSectorX + i,startSectorY + j)]?.let { star -> renderer.color = star.color }
-                val circlePos = Vector2(
-                    startPoint.x + ((2*i + 1)*MAX_RADIUS - player.x + (player.x/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
-                    startPoint.y + ((2*j + 1)*MAX_RADIUS - player.y + (player.y/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
-                )
-                if (circlePos.x - radius > startPoint.x &&
-                        circlePos.x + radius < startPoint.x + sizeX &&
-                            circlePos.y - radius > startPoint.y &&
-                                circlePos.y + radius < startPoint.y + sizeY)
-                    renderer.circle(circlePos.x, circlePos.y, radius)
+                if (stars[IVector2(starI, starJ)] == null)
+                    stars[IVector2(starI, starJ)] = Ball(
+                        (2*starI + 1) * MAX_RADIUS,
+                        (2*starJ + 1) * MAX_RADIUS,
+                        MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS),
+                        color = if (rand.nextInt(0, 100) < 33) Color.YELLOW else Color.GRAY
+                    )
+
+                stars[IVector2(starI, starJ)]?.let { star ->
+                    renderer.color = star.color
+                    val circlePos = Vector2(
+                        startPoint.x + ((2*i + 1) * MAX_RADIUS - player.x + (player.x/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
+                        startPoint.y + ((2*j + 1) * MAX_RADIUS - player.y + (player.y/(2*MAX_RADIUS)).toInt()*2*MAX_RADIUS)*ratio,
+                    )
+                    val minimapStarRadius = star.radius*ratio
+                    if (circlePos.x - minimapStarRadius > startPoint.x &&
+                        circlePos.x + minimapStarRadius < startPoint.x + sizeX &&
+                        circlePos.y - minimapStarRadius > startPoint.y &&
+                        circlePos.y + minimapStarRadius < startPoint.y + sizeY){
+                        renderer.circle(circlePos.x, circlePos.y, minimapStarRadius)
+                    }
+                    enemies.forEach {
+                        if (it.collideFixedBall(star, delta)) {
+                            it.live = false
+                            it.crached = true
+                        }
+                    }
+                }
+
             }
         }
 
@@ -223,26 +248,14 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
         ) { i, j ->
             val rand = Random(createSeed(i, j))
             if (rand.nextInt(0, 256) < STAR_LIMIT){
-                if (stars[IVector2(i, j)] == null)
-                    stars[IVector2(i, j)] = Ball(
-                        (2*i + 1) * MAX_RADIUS,
-                        (2*j + 1) * MAX_RADIUS,
-                        MIN_RADIUS + rand.nextFloat() * (MAX_RADIUS - MIN_RADIUS),
-                        color = if (rand.nextInt(0, 100) < 33) Color.YELLOW else Color.GRAY
-                    )
+
                 stars[IVector2(i, j)]?.let { star ->
                     if (player.collideFixedBall(star, delta)) {
                         if (star.color == Color.YELLOW)
                             player.lives--
-//                            return@forEachStarSectorIn
                         else {
                             star.color = Color.YELLOW
                             score += 10
-                        }
-                    }
-                    enemies.forEach {
-                        if (it.collideFixedBall(star, delta)) {
-                            it.live = false
                         }
                     }
                     star.draw(renderer)
@@ -258,7 +271,7 @@ class EnemyScreen(game: MyGame): CustomScreen(game) {
             handleEntities(renderer, delta)
             player.draw(renderer)
             enemies.forEach { it.draw(renderer) }
-            drawMinimap(renderer)
+            drawMinimap(renderer, delta)
         }
     }
 
